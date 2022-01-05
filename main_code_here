@@ -1,0 +1,174 @@
+import pyperclip
+import random
+import json
+
+
+# ---------------------------- PASSWORD GENERATOR ------------------------------- #
+
+
+def password_generator():
+    letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
+               'v',
+               'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+               'R',
+               'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+    numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
+
+    nr_letters = random.randint(8, 10)
+    nr_symbols = random.randint(2, 4)
+    nr_numbers = random.randint(2, 4)
+
+    password_list = []
+
+    for char in range(nr_letters):
+        password_list.append(random.choice(letters))
+
+    for char in range(nr_symbols):
+        password_list += random.choice(symbols)
+
+    for char in range(nr_numbers):
+        password_list += random.choice(numbers)
+
+    random.shuffle(password_list)
+
+    password = ""
+    for char in password_list:
+        password += char
+
+    return password
+
+
+# _________________________Changin generated password_________________________-
+def update_password():
+    pass_word = password_generator()
+    password.insert(0, pass_word)
+    pyperclip.copy(pass_word)
+
+
+# ---------------------------- SAVE PASSWORD ------------------------------- #
+
+def save_password():
+    website_input = (website.get()).title()
+    email_input = email.get()
+    password_input = password.get()
+
+    data_file = {
+        website_input: {
+            "email": email_input,
+            "password": password_input
+        }
+    }
+
+    if len(website_input) == 0 or len(email_input) == 0 or len(password_input) == 0:
+        messagebox.showinfo(message="ooops  !!!You have left empty box")
+
+    else:
+        message = messagebox.askokcancel(title="error",
+                                         message=f"you have entered   \n Email:{email_input} \n Password={password_input} ")
+
+        if message == True:
+
+            try:
+                file = open("data.json", "r")
+                data = json.load(file)
+                # if website_input
+                data.update(data_file)
+
+
+            except FileNotFoundError:
+                file = open("data.json", "w")
+                json.dump(data_file, file, indent=4)
+
+            except json.decoder.JSONDecodeError:
+                file = open("data.json", "w")
+                json.dump(data_file, file, indent=4)
+
+            else:
+                file = open("data.json", "w")
+                json.dump(data, file, indent=4)
+
+            finally:
+                # json.dump(data, file)
+                website.delete(0, END)
+                email.delete(0, END)
+                password.delete(0, END)
+                website.focus()
+
+
+# __________________Search FILE _________________________________________________
+def search_data():
+    website_input = (website.get()).title()
+    try:
+        file = open("data.json", "r")
+        data = json.load(file)
+        if website_input in data:
+            messagebox.showinfo(
+                message=f" Username/Email :{data[website_input]['email']} \n "
+                        f"Password : {data[website_input]['password']} ")
+            pyperclip.copy(data[website_input]['password'])
+            messagebox.showinfo(message="Password copied to your clipboard")
+        else:
+            messagebox.showinfo(message=f"The data related to \"{website_input}\" not found")
+
+
+
+    except FileNotFoundError:
+        messagebox.showinfo(
+            message=f"No any file database was found")
+
+
+# ---------------------------- UI SETUP ------------------------------- #
+
+
+from tkinter import *
+from tkinter import messagebox
+
+window = Tk()
+window.config(padx=20, pady=20)
+
+image = PhotoImage(file="logo.png")
+canvas = Canvas(width=200, height=200)
+canvas.create_image(100, 100, image=image)
+canvas.grid(column=1, row=0)
+
+# search Button GUI______________________________________________________________
+search_button = Button(text="Search", width=15, command=search_data)
+search_button.grid(column=3, row=1)
+# --------------------------------------------------------------------------------
+
+# Website Button and its label GUI___________________________________________________
+website_label = Label(text="Website", font=("Arial", 10))
+website_label.grid(column=0, row=1)
+
+website = Entry(width=35)
+website.grid(column=1, row=1, columnspan=2)
+website.focus()
+# ------------------------------------------------------------------------------------
+
+# Email button and its label GUI _---------------------------------------------------
+email_label = Label(text="Email/Username", font=("Arial", 10))
+email_label.grid(column=0, row=2)
+
+email = Entry(width=35)
+email.grid(column=1, row=2, columnspan=2)
+# _------------------------------------------------------------------------------------
+
+# Password button and its label GUI _---------------------------------------------------
+password_label = Label(text="Password", font=("Arial", 10))
+password_label.grid(column=0, row=3)
+
+password = Entry(width=36, show="*")
+password.grid(column=1, row=3, columnspan=2)
+
+password_button = Button(text="Generate Password", command=update_password)
+password_button.grid(column=3, row=3)
+# ------------------------------------------------------------------------------------------
+
+# Add button and its GUI -----------------------------------------------------------------
+add_button = Button(text="Add", width=36, command=save_password)
+add_button.grid(column=1, row=4, columnspan=2, )
+# ----------------------------------------------------------------------------------------
+
+
+window.mainloop()
